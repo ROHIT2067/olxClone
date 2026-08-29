@@ -16,6 +16,7 @@ function Sell(props){
     const [description,setDescription]=useState('')
     const [submitting,setSubmitting]=useState(false)
     const [image,setImage]=useState(null)
+    const [errors,setErrors]=useState({})
 
     const auth=userAuth()
 
@@ -28,6 +29,11 @@ function Sell(props){
         if(e.target.files)setImage(e.target.files[0])
     }
 
+    const updateField=(field,setter)=>(value)=>{
+        setter(value)
+        setErrors((current)=>({...current,[field]:''}))
+    }
+
     const handleSubmit = async (event)=>{
         event.preventDefault();
 
@@ -35,8 +41,6 @@ function Sell(props){
             alert('Please login to continue');
             return;
         }
-
-        setSubmitting(true)
 
         const readImageAsDataUrl=(file)=>{
             return new Promise((resolve,reject)=>{
@@ -54,13 +58,37 @@ function Sell(props){
         const trimmedCategory = category.trim();
         const trimmedPrice = price.trim();
         const trimmedDescription = description.trim();
-  
+
+        const validationErrors = {}
 
         if(!trimmedTitle || !trimmedCategory || !trimmedPrice || !trimmedDescription || !image){
-            alert('All fields are required');
-            setSubmitting(false)
-            return;
+            if(!trimmedTitle) validationErrors.title = 'Title is required'
+            if(!trimmedCategory) validationErrors.category = 'Category is required'
+            if(!trimmedPrice) validationErrors.price = 'Price is required'
+            if(!trimmedDescription) validationErrors.description = 'Description is required'
+            if(!image) validationErrors.image = 'An image is required'
         }
+
+        if(trimmedCategory && /\d/.test(trimmedCategory)){
+            validationErrors.category = 'Category cannot contain numbers'
+        }
+
+        if(trimmedPrice && !/^\d+(\.\d+)?$/.test(trimmedPrice)){
+            validationErrors.price = 'Price can only be a number'
+        }
+
+        const descriptionWordCount = trimmedDescription ? trimmedDescription.split(/\s+/).length : 0
+        if(descriptionWordCount > 50){
+            validationErrors.description = 'Description cannot exceed 50 words'
+        }
+
+        if(Object.keys(validationErrors).length){
+            setErrors(validationErrors)
+            return
+        }
+
+        setErrors({})
+        setSubmitting(true)
 
         try {
             const imageUrl=await readImageAsDataUrl(image)
@@ -110,10 +138,10 @@ function Sell(props){
 
                 <div className="px-6 py-5 sm:px-8">
                     <form onSubmit={handleSubmit} className="space-y-3">
-                        <Input setInput={setTitle} placeholder='Title'/>
-                        <Input setInput={setcategory} placeholder='Category'/>
-                        <Input setInput={setPrice} placeholder='Price'/>
-                        <Input setInput={setDescription} placeholder='Description'/>
+                        <Input setInput={updateField('title',setTitle)} placeholder='Title' error={errors.title}/>
+                        <Input setInput={updateField('category',setcategory)} placeholder='Category' error={errors.category}/>
+                        <Input setInput={updateField('price',setPrice)} placeholder='Price' inputMode='decimal' error={errors.price}/>
+                        <Input setInput={updateField('description',setDescription)} placeholder='Description' error={errors.description}/>
                         <div className="relative pt-1">
 
                         {image?(
@@ -139,6 +167,7 @@ function Sell(props){
                             </label>
                         )}
                         </div>
+                        {errors.image && <p className="text-sm text-red-600">{errors.image}</p>}
                         
                         {submitting?
                         (

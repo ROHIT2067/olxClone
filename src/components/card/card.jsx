@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import Favorite from '../../assets/favorite.svg'
 import { useWishlist } from '../context/use-wishlist'
 
 
@@ -50,11 +49,22 @@ const Card = ({items, title = "Fresh recommendations", emptyMessage = "No produc
               aria-label={isWishlisted(item.id) ? "Remove from wishlist" : "Add to wishlist"}
               title={isWishlisted(item.id) ? "Remove from wishlist" : "Add to wishlist"}
             >
-              <img
-                className={`w-5 ${isWishlisted(item.id) ? "opacity-100" : "opacity-70"}`}
-                src={Favorite}
-                alt=""
-              />
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                className={`h-5 w-5 transition-colors ${
+                  isWishlisted(item.id)
+                    ? "fill-red-800 stroke-red-800"
+                    : "fill-none stroke-[#002f34]"
+                }`}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z"
+                />
+              </svg>
             </button>
           </div>
 
